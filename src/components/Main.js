@@ -17,7 +17,9 @@ const Main = () => {
         navigate("/login");
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
   return (
     <div>
       <div style={{zIndex: 10, position: "relative", color: "#fff"}}>

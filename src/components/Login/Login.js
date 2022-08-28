@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import { Card, Content, Side, Main, LoginButton, Buttons} from './styles';
 import { validate } from './validate';
 import {HiArrowNarrowRight} from "react-icons/hi";
-import {AiFillWarning} from "react-icons/ai";
 import {useNavigate } from 'react-router-dom';
 import { StartApp } from '../../App';
 import { auth } from '../firebase-config';
@@ -11,9 +10,12 @@ import InputsDiv from '../InputsDiv';
 import { toast, Toaster } from "react-hot-toast";
 import { ScaleLoader } from 'react-spinners';
 import GoogleSignIn from "../google/GoogleSignIn";
+import { changeHandler, focusHandler, toastHandler } from '../functions';
 const Login = () => {
   const myContext = useContext(StartApp);
   const navigate = useNavigate();
+  const isInitialMount = useRef(true);
+
   const [loginData, setLoginData] = useState({
     email: "",
     password: ""
@@ -27,7 +29,7 @@ const Login = () => {
     error: "",
     icon: ""
   })
-  const isInitialMount = useRef(true);
+  
   const [loginBtnInfo, setLoginBtnInfo] = useState({
     display: false,
     value: "Login"
@@ -46,6 +48,7 @@ const Login = () => {
         myContext.setScaleX(-1);
       }
     });
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -65,29 +68,7 @@ const Login = () => {
     }
   }, [toasts])
 
-  const changeHandler = (event) => {
-    setLoginData({...loginData, [event.target.name]: event.target.value})
-  };
 
-  const focusHandler = (event) => {
-    setTouched({...touched, [event.target.name]: true})
-  };
-
-  const toastHandler = (error) => {
-    switch (error.code) {
-      case "auth/user-not-found":
-        setToasts({error: "You Should Sign Up First!.", icon: "❌"});
-        break;
-      case "auth/network-request-failed":
-        setToasts({error: "Check Your Connection!.", icon: <AiFillWarning/>})
-        break;
-      case "auth/wrong-password":
-        setToasts({error: "Check Your Password, Or Login With Google Sign In", icon: <AiFillWarning/>})
-        break;
-      default:
-        break;
-    }
-  };
 
   const submitHandler = async (event) => {
     event.preventDefault();
@@ -99,9 +80,9 @@ const Login = () => {
         setTimeout(() => {
           navigate("/");
         }, 500)
-        } catch (error) {
-          toastHandler(error);
-        }
+      } catch (error) {
+        toastHandler(error, setToasts);
+      }
         setLoginBtnInfo({display: false, value: "Login"});
     } else {
       setTouched({
@@ -126,8 +107,10 @@ const Login = () => {
           <h1>Login</h1>
           <form onSubmit={submitHandler}>
             <div className='top'>
-              <InputsDiv inputID="Email" inputValue="Email" name="email" errors={errors} touched={touched} onChange={changeHandler} onFocus={focusHandler} data={loginData} />
-              <InputsDiv inputID="Password" inputValue="Password" name="password" errors={errors} touched={touched} onChange={changeHandler} onFocus={focusHandler} data={loginData} />
+              <InputsDiv inputID="Email" inputValue="Email" name="email" errors={errors} touched={touched} onChange={
+                (event) => changeHandler(event, loginData, setLoginData)} onFocus={(event) => focusHandler(event, touched, setTouched)} data={loginData} />
+              <InputsDiv inputID="Password" inputValue="Password" name="password" errors={errors} touched={touched} onChange={
+                (event) => changeHandler(event, loginData, setLoginData)} onFocus={(event) => focusHandler(event, touched, setTouched)} data={loginData} />
               <GoogleSignIn />
             </div>
             <Buttons>

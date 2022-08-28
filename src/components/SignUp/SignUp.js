@@ -9,8 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase-config';
 import toast, { Toaster } from 'react-hot-toast';
-import { AiFillWarning } from 'react-icons/ai';
 import { ScaleLoader } from 'react-spinners';
+import { changeHandler, focusHandler, toastHandler } from '../functions';
 
 const SignUp = () => {
   const myContext = useContext(StartApp);
@@ -46,6 +46,7 @@ const SignUp = () => {
         myContext.setScaleX(1);
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -65,18 +66,6 @@ const SignUp = () => {
     }
   }, [toasts])
 
-  const changeHandler = (event) => {
-    if (event.target.name === "isAccepted") {
-      setSignUpData({...signUpData, [event.target.name]: event.target.checked})
-    } else {
-      setSignUpData({...signUpData, [event.target.name]: event.target.value})
-    }
-  };
-
-  const focusHandler = (event) => {
-    setTouched({...touched, [event.target.name]: true})
-  };
-
   useEffect(() => {
     setErrors(validate(signUpData));
   }, [signUpData, touched]);
@@ -86,19 +75,6 @@ const SignUp = () => {
     setTimeout(() => {
       navigate("/login");
     }, 500)
-  };
-
-  const toastHandler = (error) => {
-    switch (error.code) {
-      case "auth/email-already-in-use":
-        setToasts({error: "Email Available!", icon: "❌"});
-        break;
-      case "auth/network-request-failed":
-        setToasts({error: "Check Your Connection!.", icon: <AiFillWarning/>})
-        break;
-      default:
-        break;
-    }
   };
 
   const submitHandler = async (event) => {
@@ -115,7 +91,7 @@ const SignUp = () => {
           navigate("/");
         }, 500)
       } catch (error) {
-        toastHandler(error);
+        toastHandler(error, setToasts);
       }
       setSignUpBtnInfo({display: false, value: "Sign Up"})
     } else {
@@ -138,13 +114,13 @@ const SignUp = () => {
           <h1>Sign Up</h1>
           <form onSubmit={submitHandler}>
             <div className='top'>
-              <InputsDiv inputID="Email" inputValue="Email" name="email" errors={errors} touched={touched} onChange={changeHandler} onFocus={focusHandler} data={signUpData} />
-              <InputsDiv inputID="Username" inputValue="Username" name="userName" errors={errors} touched={touched} onChange={changeHandler} onFocus={focusHandler} data={signUpData} />
-              <InputsDiv inputID="Password" inputValue="Password" name="password" errors={errors} touched={touched} onChange={changeHandler} onFocus={focusHandler} data={signUpData} />
-              <InputsDiv inputID="repeatPassword" inputValue="Repeat Your Password" name="repeatPassword" errors={errors} touched={touched} onChange={changeHandler} onFocus={focusHandler} data={signUpData} />
+              <InputsDiv inputID="Email" inputValue="Email" name="email" errors={errors} touched={touched} onChange={(event) => changeHandler(event, signUpData, setSignUpData)} onFocus={(event) => focusHandler(event, event, signUpData, setSignUpData)} data={signUpData} />
+              <InputsDiv inputID="Username" inputValue="Username" name="userName" errors={errors} touched={touched} onChange={(event) => changeHandler(event, signUpData, setSignUpData)} onFocus={(event) => focusHandler(event, event, signUpData, setSignUpData)} data={signUpData} />
+              <InputsDiv inputID="Password" inputValue="Password" name="password" errors={errors} touched={touched} onChange={(event) => changeHandler(event, signUpData, setSignUpData)} onFocus={(event) => focusHandler(event, event, signUpData, setSignUpData)} data={signUpData} />
+              <InputsDiv inputID="repeatPassword" inputValue="Repeat Your Password" name="repeatPassword" errors={errors} touched={touched} onChange={(event) => changeHandler(event, signUpData, setSignUpData)} onFocus={(event) => focusHandler(event, signUpData, setSignUpData)} data={signUpData} />
 
               <div style={{position: "relative"}}>
-                <input className="inp-cbx" id="cbx"  value={signUpData.isAccepted} name="isAccepted" onChange={changeHandler} onFocus={focusHandler}  type="checkbox" />
+                <input className="inp-cbx" id="cbx"  value={signUpData.isAccepted} name="isAccepted" onChange={(event) => changeHandler(event, signUpData, setSignUpData)} onFocus={focusHandler}  type="checkbox" />
                 <label className="cbx" htmlFor='cbx'>
                   <span>
                     <svg width="12px" height="10px" viewBox="0 0 12 10">
